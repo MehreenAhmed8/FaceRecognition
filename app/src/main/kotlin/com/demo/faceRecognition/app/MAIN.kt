@@ -69,9 +69,6 @@ object MAIN {
 
         var showWelcomeScreen by remember { mutableStateOf(true) }
 
-        var recomposeKey by remember { mutableStateOf(0) }
-
-
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
@@ -79,8 +76,8 @@ object MAIN {
             if (showWelcomeScreen) {
                 WelcomeScreen(onNavigateToHome = { showWelcomeScreen = false })
             } else {
-             //   AppHost(Routes.Home.path)
-               RecogniseFaceScreen(appState = appState)
+                //   AppHost(Routes.Home.path)
+                RecogniseFaceScreen(appState = appState)
             }
         }
     }
@@ -103,8 +100,9 @@ object MAIN {
                 modifier = Modifier.size(500.dp)
             )
             Spacer(modifier = Modifier.height(32.dp))
-            Button(onClick = onNavigateToHome,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            Button(
+                onClick = onNavigateToHome,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Text(text = "Start Your Recognition Journey")
             }

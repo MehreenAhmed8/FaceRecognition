@@ -1,5 +1,6 @@
 package com.demo.faceRecognition.ui.screen.recogniseFace
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,6 +23,7 @@ import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -50,7 +53,8 @@ import kotlinx.coroutines.delay
 fun RecogniseFaceScreen(appState: AppState, vm: RecogniseFaceViewModel = hiltViewModel()) {
     val currentFace: ProcessedImage by vm.image
     val recognizedFace: ProcessedImage? by vm.recognizedFace
-    val showSaveDialog: Boolean by vm.showSaveDialog
+    val showSaveDialog by vm.showSaveDialog
+
     val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
     var showText by remember { mutableStateOf(false) }
 
@@ -58,10 +62,18 @@ fun RecogniseFaceScreen(appState: AppState, vm: RecogniseFaceViewModel = hiltVie
         delay(2000)
         showText = true
     }
+    LaunchedEffect(showSaveDialog) {
+        if (!showSaveDialog) {
+            vm.bindCamera()
+        }
+    }
 
-    DisposableEffect(vm.lensFacing) {
+    DisposableEffect(vm.lensFacing, showSaveDialog) {
         vm.onCompose(appState.activity, lifecycleOwner, appState.snackbar)
-        onDispose { vm.onDispose() }
+        onDispose {
+            vm.onDispose()
+            Log.d("RecogniseFaceScreen", "Camera resources disposed")
+        }
     }
 
     val content: @Composable (PaddingValues) -> Unit = { padding ->
@@ -79,19 +91,20 @@ fun RecogniseFaceScreen(appState: AppState, vm: RecogniseFaceViewModel = hiltVie
             }
             if (showText) {
                 Text(
-                    text = if (recognizedFace?.matchesCriteria == true)
-                    {"Hello ${recognizedFace?.name}"}
-                    else if (currentFace.face == null){
+                    text = if (recognizedFace?.matchesCriteria == true) {
+                        "Hello ${recognizedFace?.name}"
+                    } else if (currentFace.face == null) {
                         "No Face Detected"
-                    }
-                    else{"Tap to save your face"},
+                    } else {
+                        "Tap to save your face"
+                    },
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .padding(top = 20.dp, bottom = 20.dp)
                         .clickable {
-                           if (recognizedFace?.matchesCriteria != true && currentFace?.face != null) {
-                                vm.showSaveDialog()
+                            if (recognizedFace?.matchesCriteria != true && currentFace.face != null) {
+                                vm.showSaveDialogOnce()
                             }
                         }
                 )
@@ -107,13 +120,15 @@ fun RecogniseFaceScreen(appState: AppState, vm: RecogniseFaceViewModel = hiltVie
         content = content
     )
 
-    if (showSaveDialog) SaveDialog(
-        currentFace,
-        onValueChange = vm::onNameChange,
-        onCancel = vm::hideSaveDialog,
-        onSave = vm::saveFace
-    )
-
+    if (showSaveDialog) {
+        val context = LocalContext.current
+        SaveDialog(
+            currentFace,
+            onValueChange = vm::onNameChange,
+            onCancel = vm::hideSaveDialog,
+            onSave = { vm.saveFace(context) }
+        )
+    }
 }
 
 @Composable
@@ -131,7 +146,10 @@ private fun SaveDialog(
     onSave: () -> Unit,
 ) {
     val newContent = content ?: {
-        Card(modifier = modifier, elevation = CardDefaults.cardElevation(MaterialTheme.spacing.Small)) {
+        Card(
+            modifier = modifier,
+            elevation = CardDefaults.cardElevation(MaterialTheme.spacing.Small)
+        ) {
             Column(
                 verticalArrangement = Arrangement.Bottom,
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -148,7 +166,13 @@ private fun SaveDialog(
                         .padding(top = MaterialTheme.spacing.Small),
                 )
                 value.faceBitmap?.asImageBitmap()?.let {
-                    Image(it, contentDescription = null, alignment = Alignment.Center, contentScale = ContentScale.Fit, modifier = Modifier.size(250.dp))
+                    Image(
+                        it,
+                        contentDescription = null,
+                        alignment = Alignment.Center,
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.size(250.dp)
+                    )
                 }
                 OutlinedTextField(
                     value = value.name,
@@ -171,7 +195,8 @@ private fun SaveDialog(
                         .weight(1f)
                 )
                 val isValid = value.name.length > 3
-                val saveColor = if (isValid) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer
+                val saveColor =
+                    if (isValid) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer
                 Text(
                     text = positiveBtnText.uppercase(),
                     style = MaterialTheme.typography.titleMedium,

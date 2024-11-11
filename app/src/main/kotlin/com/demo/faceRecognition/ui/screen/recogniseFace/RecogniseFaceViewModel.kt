@@ -3,6 +3,7 @@ package com.demo.faceRecognition.ui.screen.recogniseFace
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Paint
+import android.util.Log
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -29,16 +30,26 @@ class RecogniseFaceViewModel @Inject constructor(private val repo: Repository) :
     lateinit var lifecycleOwner: LifecycleOwner
     lateinit var snackbarHost: SnackbarHostState
     val cameraProvider: ProcessCameraProvider by lazy { repo.cameraProviderFuture.get() }
-    val showSaveDialog: MutableState<Boolean> = mutableStateOf(false)
+
     var images: List<ProcessedImage> = listOf()
     val image: MutableState<ProcessedImage> = mutableStateOf(ProcessedImage())
-    val showDialog: MutableState<Boolean> = mutableStateOf(false)
     var recognizedFace: MutableState<ProcessedImage?> = mutableStateOf(null)
     val lensFacing: MutableState<Int> = mutableStateOf(CameraSelector.LENS_FACING_FRONT)
     val cameraSelector get(): CameraSelector = repo.cameraSelector(lensFacing.value)
     val paint = Paint().apply {
         strokeWidth = 3f
         color = Color.BLUE
+    }
+
+    var showSaveDialog = mutableStateOf(false)
+
+    fun showSaveDialogOnce() {
+        if (!showSaveDialog.value) {
+            showSaveDialog.value=true
+        }
+    }
+    fun hideSaveDialog() {
+        showSaveDialog.value = false
     }
     val Context.getImageAnalysis
         get() = repo.imageAnalysis(lensFacing.value, paint) { result ->
@@ -55,13 +66,11 @@ class RecogniseFaceViewModel @Inject constructor(private val repo: Repository) :
     fun onCompose(context: Context, owner: LifecycleOwner, snackbar: SnackbarHostState) = viewModelScope.launch {
         runCatching {
             snackbarHost = snackbar
+            if (showSaveDialog.value) return@runCatching
             lifecycleOwner = owner
             imageAnalysis = context.getImageAnalysis
             images = withContext(Dispatchers.IO) { repo.faceList().map { it.processedImage(context) } }
             bindCamera()
-           // delay(1000)
-            bindCamera()
-            LOG.d("Recognise Face Screen Composed")
         }.onFailure { LOG.e(it, it.message) }
     }
 
@@ -82,31 +91,27 @@ class RecogniseFaceViewModel @Inject constructor(private val repo: Repository) :
         LOG.d("Camera is bound to lifecycle.")
     }.onFailure { LOG.e(it, it.message) }
 
-    fun showDialog() = runCatching {
-        showDialog.value = true
-        cameraProvider.unbindAll()
-    }.onFailure { LOG.e(it, it.message) }
-
-    fun hideDialog() = runCatching {
-        showDialog.value = false
-        bindCamera()
-    }.onFailure { LOG.e(it, it.message) }
-
-    fun showSaveDialog() = runCatching {
-        showSaveDialog.value = true
-        cameraProvider.unbindAll()
-    }.onFailure { LOG.e(it, it.message) }
-
-    fun hideSaveDialog() = runCatching { showSaveDialog.value = false }.onFailure { LOG.e(it, it.message) }
-
     fun onNameChange(value: String) = runCatching { image.value = image.value.copy(name = value) }.onFailure { LOG.e(it, it.message) }
 
-    fun saveFace() = viewModelScope.launch {
+    fun saveFace(context: Context) = viewModelScope.launch {
         runCatching {
             hideSaveDialog()
             val error = withContext(Dispatchers.IO) { repo.saveFace(image.value).exceptionOrNull() }
-            snackbarHost.showSnackbar(error?.message ?: "Face Saved Successfully")
+            images = withContext(Dispatchers.IO) { repo.faceList().map { it.processedImage(context) } }
+            recognizeFace(image.value, images)
         }.onFailure { LOG.e(it, it.message) }
     }
+    private fun recognizeFace(currentFace: ProcessedImage?, savedFaces: List<ProcessedImage>) {
+        currentFace?.let {
+            Log.d("llmdd","saved faces: $it")
 
+            savedFaces.forEach { savedFace ->
+                Log.d("llmdd","saved faces: $savedFace")
+                if (savedFace.matchesCriteria && savedFace.faceSignature == currentFace.faceSignature) {
+                    recognizedFace.value = savedFace // Set recognized face if it matches
+                    return
+                }
+            }
+        }
+    }
 }
