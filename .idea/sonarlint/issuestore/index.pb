@@ -1,0 +1,37 @@
+
+9
+	README.md,8/e/8ec9a00bfd09b3190ac6b22251dbb1aa95a0579d
+Å
+Qapp/src/main/kotlin/com/krishnaZyala/faceRecognition/ui/screen/home/HomeScreen.kt,d/8/d8482bb6c22a2aceead17a85205271bca53d07eb
+r
+Bapp/src/main/kotlin/com/krishnaZyala/faceRecognition/app/Module.kt,7/0/7089b45f60d095ae33046f15ecadb5b119083198
+P
+ app/src/main/AndroidManifest.xml,8/c/8c55c3ccc257e5907959013f99656e4c8ec3903e
+p
+@app/src/main/kotlin/com/krishnaZyala/faceRecognition/app/MAIN.kt,8/a/8a571bc0abfa33b5df7040ca94cdd05901490b2d
+|
+Lapp/src/main/kotlin/com/krishnaZyala/faceRecognition/ui/navigation/Routes.kt,9/2/9257e0e4fb0a2e81a53fc10090d8d1a0418fd6e5
+}
+Mapp/src/main/kotlin/com/krishnaZyala/faceRecognition/ui/navigation/AppHost.kt,4/b/4bdcc94fa1c08b724f018136e70560fbf113039a
+q
+Aapp/src/main/kotlin/com/krishnaZyala/faceRecognition/app/Utils.kt,5/0/50aaa74bf6fdcf8eb2686335349e9bec818a72a9
+Å
+Qapp/src/main/kotlin/com/krishnaZyala/faceRecognition/data/model/ProcessedImage.kt,0/9/09000a73bd40be0cff2ea99b8d0f1f24323ddefa
+Ü
+Vapp/src/main/kotlin/com/krishnaZyala/faceRecognition/ui/screen/home/HomeScreenState.kt,e/7/e716c876eef40fe63aa7ab11b58107ac47328d0a
+~
+Napp/src/main/kotlin/com/krishnaZyala/faceRecognition/ui/navigation/HomeHost.kt,a/c/acf1eab9a0bead4c71326c797a12507cb7078895
+É
+Sapp/src/main/kotlin/com/krishnaZyala/faceRecognition/ui/screen/faces/FacesScreen.kt,4/a/4ae896b46b20b4aafd096933bd9dcb73301f752f
+{
+Kapp/src/main/kotlin/com/krishnaZyala/faceRecognition/data/model/FaceInfo.kt,2/4/24ea14d0fafa9180675706f4be9f8da221b15eaa
+á
+Wapp/src/main/kotlin/com/krishnaZyala/faceRecognition/ui/screen/addFace/AddFaceScreen.kt,5/6/56f39097649c61a01d8a7d96b7f92a7fc81b632f
+ì
+capp/src/main/kotlin/com/krishnaZyala/faceRecognition/ui/screen/recogniseFace/RecogniseFaceScreen.kt,e/2/e23f7e8f316401a0194fddf10299ef82e8dd6068
+Ñ
+Tapp/src/main/kotlin/com/krishnaZyala/faceRecognition/ui/screen/home/NavigationBar.kt,a/4/a427cc24d8ac8de0aad9fb29335614224447e79c
+Ñ
+Tapp/src/main/kotlin/com/krishnaZyala/faceRecognition/ui/screen/home/HomeViewModel.kt,f/3/f30945d51f37ac9943524743045434861368c1eb
+ä
+Zapp/src/main/kotlin/com/krishnaZyala/faceRecognition/ui/screen/addFace/AddFaceViewModel.kt,8/e/8ea68faca55d46c1cbbe9832f9ec2cd80b823723
